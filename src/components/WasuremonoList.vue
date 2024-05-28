@@ -123,13 +123,12 @@ if(savedItems) {
   taskStore.items = JSON.parse(savedItems);
 }
 
-
 </script>
 
 <style scoped>
 .title {
   text-align: center;
-  color: rgb(206, 103, 13);
+  color: rgb(209, 104, 13);
 }
 
 .reset-button {
