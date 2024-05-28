@@ -14,10 +14,7 @@
  
  <!-- リストの入力 -->
  <section class="input-field">
-  <div>
-    <input class="text-holder" type="text" placeholder="リストを入力">
-  </div>
- 
+    <input class="text-holder" v-model="newItem" type="text" placeholder="リストを入力" @keyup.enter />
 
  <!-- 子供の名前選択 -->
  <div class="selected-children">
@@ -32,28 +29,28 @@
 
  <!-- 日付を選択 -->
  <div class="selected-calendar">
-  <label for="date">日付を選択：
+  <label for="calendar">日付を選択：
     <input id="calendar" type="date" v-model="selectedDate">
   </label>
  </div>
 
  <!-- ボタン -->
-<button class="add-button">追加</button> 
-<button class="reset-button">リセットする</button>
+<button class="add-button" @click="addItem">追加</button> 
+<button class="reset-button" @click="resetItem">リセットする</button>
 </section>
 
  <!-- リストを表示するエリア -->
  <section class="listing-area">
-  <ul>
-    <h3>の忘れ物リスト</h3>
-    <li>
-      <input>
-      <button class="fix-button" >修正</button>
-      <button class="delete-button">削除</button>
+  <ul v-for="child in children" :key="child.id">
+    <h3>{{ child.name }}の忘れ物リスト</h3>
+    <li v-for="(item,index) in taskStore.getItemsForChild(child.id)" :key="index">
+      <input type="checkbox" v-model="item.checked" />
+      {{ item.text }} [{{ item.date }}]
+      <button class="fix-button" @click="editItem(child.id,index)">修正</button>
+      <button class="delete-button" @click="removeItem(child.id, index)">削除</button>
     </li>
   </ul>
 </section>
-
 
   </div>
     </div>
@@ -69,7 +66,7 @@ const taskStore = useTaskStore();
 // 子供の名前
 const children = reactive([
   { id: 1, name:'エイト'},
-  { id: 2, name:'トウリ'},
+  { id: 2, name:'ト-リ'},
 ]);
 
 // リアクティブなデータ
@@ -77,12 +74,68 @@ const selectedChild = ref(null);
 const selectedDate = ref(null);
 const newItem = ref('');
 
+// アイテムを追加
+const addItem = () => {
+  if (newItem.value.trim() !==  '') {
+    taskStore.addItem({
+      text: newItem.value.trim(),
+      checked: false,
+      childId: selectedChild.value.id,
+      date: selectedDate.value
+    });
+    newItem.value = '';
+    updateLocalStorage();
+  }
+}
+
+// リストの修正
+function editItem (childId,index) {
+  const newText = prompt('リストを修正してください',
+  taskStore.getItemsForChild(childId)[index].text);
+  if (newText !== null) {
+    taskStore.editItem(childId,index,newText.trim());
+  }
+  updateLocalStorage();
+}
+
+// リストの削除
+function removeItem(childId,index) {
+  taskStore.removeItem(childId,index);
+  updateLocalStorage();
+}
+
+const resetItem = () => {
+  confirm('全てリセットしますか？');
+  taskStore.getItems.map((item) => {
+    return item.checked = false;
+  });
+  updateLocalStorage();
+}
+
+// ローカルストレージへデータを保存する
+const updateLocalStorage = () => {
+  localStorage.setItem('items', JSON.stringify(taskStore.items));
+};
+
+// ローカルストレージからデータを読み込む
+const savedItems = localStorage.getItem('items');
+if(savedItems) {
+  taskStore.items = JSON.parse(savedItems);
+}
+
 
 </script>
 
 <style scoped>
 .title {
   text-align: center;
+  color: rgb(206, 103, 13);
+}
+
+.reset-button {
+  border: none;
+  padding: 16px;
+  font-weight: bold;
 }
 
 .input-field {
@@ -97,7 +150,7 @@ const newItem = ref('');
  margin-top: 8px;
  font-weight: bold;
  cursor: pointer;
- background-color: cadetblue;
+ background-color: salmon;
  color: white;
  border-radius: 16px;
  transition: all 0.5s ease;
@@ -123,6 +176,12 @@ const newItem = ref('');
   font-size: 16px;
   width: 70%;
 }
+
+.listing-area li {
+  list-style: none;
+  margin-top: 8px;
+}
+
 .selected-children {
   margin: 8px 8px;
 }
@@ -142,7 +201,25 @@ const newItem = ref('');
 }
 
 
-.fix-buttton {
+.fix-button {
   margin-right: 8px;
+  padding: 4px 8px;
+  font-weight: bold;
+  cursor: pointer;
+  border: none;
+  color: white;
+  border-radius: 6px;
+  background-color: salmon;
+}
+
+.delete-button {
+  margin-right: 8px;
+  padding: 4px 8px;
+  font-weight: bold;
+  cursor: pointer;
+  border: none;
+  color: white;
+  border-radius: 6px;
+  background-color: rosybrown;
 }
 </style>
