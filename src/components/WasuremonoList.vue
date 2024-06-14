@@ -43,7 +43,7 @@
  <section class="listing-area">
   <ul v-for="child in children" :key="child.id">
     <h3>{{ child.name }}の忘れ物リスト</h3>
-    <li v-for="(item,index) in taskStore.getItemsForChild(child.id)" :key="index">
+    <li v-for="(item,index) in taskStore.getItemsForChild(child.id)" :key="index" :class="{ 'checked-item' : item.checked }">
       <input type="checkbox" v-model="item.checked" />
       {{ item.text }} [{{ item.date }}]
       <button class="fix-button" @click="editItem(child.id,index)">修正</button>
@@ -179,6 +179,10 @@ if(savedItems) {
 .listing-area li {
   list-style: none;
   margin-top: 8px;
+}
+
+.checked-item {
+  text-decoration: line-through;
 }
 
 .selected-children {
