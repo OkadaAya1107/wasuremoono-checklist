@@ -19,7 +19,8 @@
  <!-- 子供の名前選択 -->
  <div class="selected-children">
   <label for="children">子供の名前：
- <select id="children" v-model="selectedChild">
+ <select id="children" v-model="selectedTarget">
+  
   <option v-for="child in children" :key="child.id" :value="child">
   {{ child.name }}
      </option>
@@ -67,6 +68,7 @@ const taskStore = useTaskStore();
 const children = reactive([
   { id: 1, name:'エイト'},
   { id: 2, name:'ト-リ'},
+  { id: 3, name:'エイト＆ト-リ'},
 ]);
 
 // リアクティブなデータ
@@ -83,14 +85,28 @@ const today = computed(() => {
 });
 
 // アイテムを追加
+
+const selectedTarget = ref(null);
+
 const addItem = () => {
   if (newItem.value.trim() !==  '') {
     taskStore.addItem({
       text: newItem.value.trim(),
       checked: false,
-      childId: selectedChild.value.id,
+      childId: selectedChild.value ===  'all' ? 'all' : selectedTarget.value.id,
       date: selectedDate.value
     });
+    
+    taskStore.addItem(item);
+
+    if(item.childId === 'all') {
+      children.forEach(child => {
+        taskStore.addItem({
+          ...item,
+          childId: child.id
+        })
+      });
+    }
     newItem.value = '';
     updateLocalStorage();
   }

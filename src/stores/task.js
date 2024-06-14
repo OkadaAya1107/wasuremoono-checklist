@@ -31,5 +31,12 @@ export const useTaskStore = defineStore('task', {
       this.items = updateItem;
     }
    },
+   getItemsForChild(childId) {
+    if(childId === 'all') {
+      return this.items;
+    } else {
+      return this.items.filter(item => item.childId === childId);
+    }
+   },
   }
 });
