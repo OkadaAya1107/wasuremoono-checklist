@@ -30,7 +30,7 @@
  <!-- 日付を選択 -->
  <div class="selected-calendar">
   <label for="calendar">日付を選択：
-    <input id="calendar" type="date" v-model="selectedDate">
+    <input id="calendar" type="date" v-model="selectedDate" :min="today">
   </label>
  </div>
 
@@ -58,7 +58,7 @@
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue';
+import { ref, reactive, computed } from 'vue';
 import { useTaskStore } from '@/stores/task.js';
 
 const taskStore = useTaskStore();
@@ -73,6 +73,14 @@ const children = reactive([
 const selectedChild = ref(null);
 const selectedDate = ref(null);
 const newItem = ref('');
+
+const today = computed(() => {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = (now.getMonth() + 1).toString().padStart(2, '0');
+  const day = now.getDate().toString().padStart(2, '0');
+  return `${year}-${month}-${day}`;
+});
 
 // アイテムを追加
 const addItem = () => {
