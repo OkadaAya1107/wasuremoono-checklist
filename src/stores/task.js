@@ -8,11 +8,6 @@ export const useTaskStore = defineStore('task', {
     getItems(state) {
       return state.items;
     },
-    getItemsForChild(state) {
-      return(childId) => {
-        return state.items.filter((item) => item.childId === childId);
-      }
-    },
   },
   actions: {
   addItem(item) {

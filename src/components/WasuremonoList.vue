@@ -61,14 +61,15 @@
 <script setup>
 import { ref, reactive, computed } from 'vue';
 import { useTaskStore } from '@/stores/task.js';
+import axios from 'axios';
 
 const taskStore = useTaskStore();
 
 // 子供の名前
 const children = reactive([
-  { id: 1, name:'エイト'},
-  { id: 2, name:'ト-リ'},
-  { id: 3, name:'エイト＆ト-リ'},
+  { id: 'エイト', name:'エイト'},
+  { id: 'ト-リ', name:'ト-リ'},
+  { id: 'エイト＆ト-リ', name:'エイト＆ト-リ'},
 ]);
 
 // リアクティブなデータ
@@ -88,14 +89,14 @@ const today = computed(() => {
 
 const selectedTarget = ref(null);
 
-const addItem = () => {
+const addItem = async() => {
   if (newItem.value.trim() !==  '') {
-    taskStore.addItem({
+    const item = {
       text: newItem.value.trim(),
       checked: false,
-      childId: selectedChild.value ===  'all' ? 'all' : selectedTarget.value.id,
+      childId: selectedTarget.value ===  'all' ? 'all' : selectedTarget.value.id,
       date: selectedDate.value
-    });
+    };
     
     taskStore.addItem(item);
 
@@ -107,10 +108,32 @@ const addItem = () => {
         })
       });
     }
+
+    // LINE通知の送信
+    try {
+      await sendLineNotification(`新しい忘れ物「${item.childId}」に「${item.text}」が追加されました。`);
+    }catch(error) {
+      console
+      .log('LINE通知の送信に失敗しました。', error)
+    }
+
     newItem.value = '';
     updateLocalStorage();
   }
 }
+
+// backendに対してLINE通知の送信を行う
+const sendLineNotification = async(message) => {
+  try {
+    console.log('VITE_API_BASE_URL:', import.meta.env.VITE_API_BASE_URL);//環境変数の確認
+    await axios.post(`${import.meta.env.VITE_API_BASE_URL}/api/notify`,{
+   message: message
+    }),
+    console.log('LINE通知が送信されました');
+  }catch(error) {
+    console.log('LINE通知の送信に失敗しました' ,error);
+  }
+};
 
 // リストの修正
 function editItem (childId,index) {
